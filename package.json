@@ -1,0 +1,22 @@
+{
+	"name": "conventional-commits-changelog",
+	"version": "1.0.0",
+	"description": "Build a changelog from conventional commits",
+	"type": "module",
+	"main": "index.js",
+	"author": "Phil Faciana <phil@renderdev.com> (https://renderdev.com/)",
+	"license": "MIT",
+	"scripts": {
+		"test": "vitest"
+	},
+	"dependencies": {
+		"@actions/core": "^1.10",
+		"@actions/exec": "^1.1",
+		"@actions/github": "^6.0",
+		"conventional-commits-parser": "^6.0",
+		"semver": "^7.6"
+	},
+	"devDependencies": {
+		"vitest": "^2.0"
+	}
+}

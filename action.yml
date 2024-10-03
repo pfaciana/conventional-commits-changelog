@@ -1,0 +1,45 @@
+name: Conventional Commits Changelog
+description: Build a changelog from conventional commits
+inputs:
+  file:
+    description: filename to save the changelog to
+    default: ''
+  options:
+    description: options object to build the changelog
+    default: ''
+  desc-header:
+    description: use the release tag commit message as the release header in the changelog
+    default: 'false'
+outputs:
+  changelog:
+    description: The output of the changelog
+    value: ${{ steps.build_changelog.outputs.changelog }}
+runs:
+  using: composite
+  steps:
+    - name: Dump github context
+      if: env.DEBUG_MODE == 1
+      run: echo "$GITHUB_CONTEXT"
+      shell: bash
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+
+    - name: Node, npm versions, and install
+      run: |
+        node --version
+        npm --version
+        npm install
+        rm package-lock.json
+      shell: bash
+      working-directory: ${{ github.action_path }}
+
+    - name: Build Changelog
+      id: build_changelog
+      run: node ${{ env.DEBUG_MODE == '1' && '--inspect-brk=9229' || '' }} ${{ github.action_path }}/index.mjs
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        DEBUG_MODE: ${{ env.DEBUG_MODE || '0' }}
+        DEST_FILE: ${{ inputs.file }}
+        DESC_HEADER: ${{ inputs.desc-header }}
+        BUILD_OPTIONS: ${{ inputs.options }}
