@@ -5,6 +5,7 @@
 The Conventional Commits Changelog action automatically generates a changelog based on your project's commit history, following the Conventional Commits specification. It helps maintain a clear and standardized record of changes, making it easier for developers and users to understand the evolution of your project.
 
 If your commit messages do not follow the Conventional Commit specs, it will convert them to Conventional Commits making a best guess searching your commits for keywords and verbs/actions. However, this is only intended to be used as a fallback and not necessary the base case.
+
 ### Features
 
 - Automatically generates a changelog from conventional commits
@@ -17,13 +18,19 @@ If your commit messages do not follow the Conventional Commit specs, it will con
 
 ### Installation
 
-To use this action in your workflow, simply include it in your `.github/workflows/` directory.
+To use this action in your workflow, include it in your `.github/workflows/` directory.
 
 ### Quick Start
 
 Here's a minimal example to get started:
 
 ```yaml
+- name: Checkout Code
+  uses: actions/checkout@v4
+  with:
+    fetch-depth: 0
+    fetch-tags: true
+
 - name: Generate Changelog
   uses: pfaciana/conventional-commits-changelog
   env:
@@ -33,6 +40,22 @@ Here's a minimal example to get started:
 This basic configuration will generate a changelog whenever a new tag is pushed, using default settings.
 
 ## Usage
+
+### Important: Full Repository Checkout
+
+Before using this action, it's crucial to perform a full checkout of your repository, including all history and tags. This step is necessary for the action to access the complete commit history and generate an accurate changelog.
+
+Add the following step before using the Conventional Commits Changelog action:
+
+```yaml
+- name: Checkout Code
+  uses: actions/checkout@v4
+  with:
+    fetch-depth: 0  # Fetch all history for all branches and tags
+    fetch-tags: true  # Fetch all tags
+```
+
+Failure to include this step with the specified options may result in incomplete or inaccurate changelogs.
 
 ### Full Usage
 
@@ -69,7 +92,7 @@ jobs:
             {"types":{"feat_add":"📢 Added","feat_change":"⚡ Changed","feat_remove":"🗑️ Removed","fix":"🐞 Fixed"},"notice":{"keys":{"🚨 BREAKING CHANGES":"/^BREAKING[ -]CHANGE$/"}}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Commit and Push Changelog
         run: |
           git config user.name github-actions
@@ -84,7 +107,7 @@ This example generates a changelog, saves it to `CHANGELOG.md`, uses custom type
 ### Inputs
 
 | Name        | Description                                              | Required | Default |
-| ----------- | -------------------------------------------------------- | -------- | ------- |
+|-------------|----------------------------------------------------------|----------|---------|
 | file        | Filename to save the changelog to                        | No       | ``      |
 | options     | JSON string of options to customize changelog generation | No       | `{}`    |
 | desc-header | Use release tag commit message as the release header     | No       | `false` |
@@ -94,7 +117,7 @@ This example generates a changelog, saves it to `CHANGELOG.md`, uses custom type
 The `options` input allows you to customize the changelog generation. Here's a complete list of available key/value pairs:
 
 | Key               | Description                                                    | Default                                                                               |
-| ----------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+|-------------------|----------------------------------------------------------------|---------------------------------------------------------------------------------------|
 | `coerce`          | Whether to coerce version numbers                              | `true`                                                                                |
 | `onlyFirst`       | Only return the first release                                  | `false`                                                                               |
 | `onlyBody`        | Include only the body of the changelog                         | `false`                                                                               |
@@ -144,6 +167,7 @@ Example usage in your workflow:
 ```
 
 This configuration provides a comprehensive set of options to fine-tune how your changelog is generated and structured.
+
 ### Outputs
 
 | Name      | Description                     |
@@ -224,3 +248,7 @@ Merge commits are typically not included in the changelog unless they follow the
 ### Can I use this action to update an existing changelog?
 
 The action generates a new changelog each time it runs. If you want to update an existing changelog, you'll need to implement additional steps in your workflow to merge the new content with the existing file.
+
+### Why do I need to set `fetch-depth: 0` and `fetch-tags: true` in the checkout step?
+
+Setting `fetch-depth: 0` ensures that the entire git history is fetched, which is necessary for generating a complete changelog. The `fetch-tags: true` option ensures that all tags are fetched, which is crucial for determining version boundaries in the changelog. Without these options, the action may not have access to the full history and all tags, resulting in an incomplete or inaccurate changelog.
