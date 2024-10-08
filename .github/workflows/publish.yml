@@ -1,0 +1,42 @@
+name: Versions
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  versions:
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+          fetch-tags: true  # Fetch all tags
+
+      - name: Sync Versions
+        id: sync_versions
+        uses: pfaciana/version-sync@v1
+        with:
+          json-files: package.json
+          release-type: patch
+          commit-message: Update version to {version}
+          tag-message: Add tag {tag}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG_MODE: ${{ vars.DEBUG_MODE || '0' }}
+
+      - name: Update version aliases
+        id: update_version_aliases
+        uses: pfaciana/version-alias@v1
+        with:
+          match-tag: ${{ steps.sync_versions.outputs.tag-name }}
+          alias-minor: yes
+          alias-major: yes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG_MODE: ${{ vars.DEBUG_MODE || '0' }}
