@@ -32,6 +32,7 @@ jobs:
 
       - name: Update version aliases
         id: update_version_aliases
+        if: steps.sync_versions.outputs.new-tag-name != ''
         uses: pfaciana/version-alias@v1
         with:
           match-tag: ${{ steps.sync_versions.outputs.tag-name }}
